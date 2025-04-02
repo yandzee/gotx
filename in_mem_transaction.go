@@ -1,6 +1,7 @@
 package gotx
 
 import (
+	"context"
 	"log/slog"
 )
 
@@ -9,7 +10,7 @@ type InMemoryTransaction struct {
 	Error error
 }
 
-func (imtx *InMemoryTransaction) Commit() error {
+func (imtx *InMemoryTransaction) Commit(_ context.Context) error {
 	attrs := []any{}
 
 	if imtx.Error != nil {
@@ -20,7 +21,7 @@ func (imtx *InMemoryTransaction) Commit() error {
 	return imtx.Error
 }
 
-func (imtx *InMemoryTransaction) Rollback() error {
+func (imtx *InMemoryTransaction) Rollback(_ context.Context) error {
 	attrs := []any{}
 
 	if imtx.Error != nil {

@@ -53,6 +53,8 @@ func TestEverything(t *testing.T) {
 }
 
 func runTests(t *testing.T, td []TestDescriptor) {
+	ctx := context.Background()
+
 	for _, d := range td {
 		t.Run(d.Name, func(t *testing.T) {
 			txer := newTxer(d.BeginErr, d.TxErr)
@@ -86,13 +88,13 @@ func runTests(t *testing.T, td []TestDescriptor) {
 				t.Fatalf("Wrapped context gives owned transaction")
 			}
 
-			if err := tx.Unowned().Commit(); err != nil {
+			if err := tx.Unowned().Commit(ctx); err != nil {
 				t.Fatalf("Fresh Unowned commit failed: %s\n", err.Error())
 			}
 
 			// Use checks
 			if d.CommitRollback {
-				err = tx.Commit()
+				err = tx.Commit(ctx)
 
 				switch {
 				case d.TxErr != nil && !errors.Is(err, d.TxErr):
@@ -104,7 +106,7 @@ func runTests(t *testing.T, td []TestDescriptor) {
 				}
 
 				// Commit after exhaust check
-				err = tx.Commit()
+				err = tx.Commit(ctx)
 				switch {
 				case err == nil:
 					t.Fatalf("Repeated Commit gives no error")
@@ -117,7 +119,7 @@ func runTests(t *testing.T, td []TestDescriptor) {
 				}
 
 				// Rollback on exhausted tx
-				err = tx.Rollback()
+				err = tx.Rollback(ctx)
 				switch {
 				case err == nil:
 					t.Fatalf("Rollback after Commit gives no error")
@@ -129,7 +131,7 @@ func runTests(t *testing.T, td []TestDescriptor) {
 					t.Fatalf("Rollback after Commit has lost previous error")
 				}
 			} else {
-				err = tx.Rollback()
+				err = tx.Rollback(ctx)
 
 				switch {
 				case d.TxErr != nil && !errors.Is(err, d.TxErr):
@@ -141,7 +143,7 @@ func runTests(t *testing.T, td []TestDescriptor) {
 				}
 
 				// Rollback after exhaust check
-				err = tx.Rollback()
+				err = tx.Rollback(ctx)
 				switch {
 				case err == nil:
 					t.Fatalf("Repeated Rollback gives no error")
@@ -154,7 +156,7 @@ func runTests(t *testing.T, td []TestDescriptor) {
 				}
 
 				// Rollback on exhausted tx
-				err = tx.Commit()
+				err = tx.Commit(ctx)
 				switch {
 				case err == nil:
 					t.Fatalf("Commit after Rollback gives no error")

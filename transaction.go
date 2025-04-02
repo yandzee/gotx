@@ -29,13 +29,13 @@ type TxState struct {
 }
 
 type TransactionImpl interface {
-	Commit() error
-	Rollback() error
+	Commit(context.Context) error
+	Rollback(context.Context) error
 }
 
-func (wt *Transaction[Tx]) Commit() error {
+func (wt *Transaction[Tx]) Commit(ctx context.Context) error {
 	return wt.do(func(tx Tx) error {
-		err := tx.Commit()
+		err := tx.Commit(ctx)
 
 		switch {
 		case err == nil:
@@ -48,9 +48,9 @@ func (wt *Transaction[Tx]) Commit() error {
 	})
 }
 
-func (wt *Transaction[Tx]) Rollback() error {
+func (wt *Transaction[Tx]) Rollback(ctx context.Context) error {
 	return wt.do(func(tx Tx) error {
-		err := tx.Rollback()
+		err := tx.Rollback(ctx)
 
 		switch {
 		case err == nil:
